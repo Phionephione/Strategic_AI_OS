@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+prophet
+wbgapi
+pandas
+pydantic
