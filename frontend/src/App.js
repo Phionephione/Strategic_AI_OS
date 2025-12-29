@@ -5,24 +5,18 @@ import Terminal from './pages/Terminal';
 import Methodology from './pages/Methodology';
 import Comparison from './pages/Comparison'; 
 import DataView from './pages/DataView'; 
+import ChatBot from './components/ChatBot'; // <--- NEW IMPORT
 
-import { 
-  Globe, 
-  LayoutDashboard, 
-  GitCompare, 
-  BookOpen, 
-  Database,
-  ExternalLink
-} from 'lucide-react';
+import { Globe, LayoutDashboard, GitCompare, BookOpen, Database, ExternalLink } from 'lucide-react';
 
 export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-[#0b0e14] text-slate-200 font-sans flex overflow-hidden">
         
-        {/* SIDEBAR NAVIGATION */}
+        {/* SIDEBAR */}
         <nav className="w-20 lg:w-72 bg-[#161b22] border-r border-slate-800 flex flex-col p-6 sticky top-0 h-screen z-50 shadow-2xl">
-          <Link to="/" className="flex items-center gap-3 px-2 mb-12 hover:opacity-80 transition-opacity">
+          <Link to="/" className="flex items-center gap-3 px-2 mb-12">
             <div className="bg-cyan-500 p-2 rounded-xl shadow-lg shadow-cyan-500/20">
                 <Globe className="text-black" size={24} strokeWidth={3} />
             </div>
@@ -48,12 +42,12 @@ export default function App() {
                 <ExternalLink size={12} className="text-cyan-400" /> World Bank API
             </p>
             <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                <div className="bg-cyan-500 w-3/4 h-full animate-[progress_2s_ease-in-out]"></div>
+                <div className="bg-cyan-500 w-3/4 h-full"></div>
             </div>
           </div>
         </nav>
 
-        {/* MAIN VIEWPORT AREA */}
+        {/* MAIN VIEWPORT */}
         <main className="flex-1 overflow-y-auto scroll-smooth">
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -62,6 +56,9 @@ export default function App() {
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/data" element={<DataView />} />
           </Routes>
+          
+          {/* FLOATING CHATBOT - APPEARS ON ALL PAGES */}
+          <ChatBot /> 
         </main>
 
       </div>
@@ -72,26 +69,11 @@ export default function App() {
 function NavLink({ to, icon, label }) {
   const location = useLocation();
   const isActive = location.pathname === to;
-
   return (
-    <Link 
-      to={to} 
-      className={`
-        flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group
-        ${isActive 
-          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
-          : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'}
-      `}
-    >
-      <div className={`${isActive ? 'text-cyan-400' : 'group-hover:text-cyan-400'} transition-colors`}>
-        {icon}
-      </div>
-      <span className={`hidden lg:block font-bold text-sm tracking-tight ${isActive ? 'text-white' : ''}`}>
-        {label}
-      </span>
-      {isActive && (
-        <div className="hidden lg:block ml-auto w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]"></div>
-      )}
+    <Link to={to} className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group ${isActive ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'}`}>
+      <div className={`${isActive ? 'text-cyan-400' : 'group-hover:text-cyan-400'} transition-colors`}>{icon}</div>
+      <span className={`hidden lg:block font-bold text-sm tracking-tight ${isActive ? 'text-white' : ''}`}>{label}</span>
+      {isActive && <div className="hidden lg:block ml-auto w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]"></div>}
     </Link>
   );
 }
