@@ -4,3 +4,6 @@ prophet
 wbgapi
 pandas
 pydantic
+pycountry
+python-dotenv
+google-genai
