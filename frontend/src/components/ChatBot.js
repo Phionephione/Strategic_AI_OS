@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
 
-// Using 127.0.0.1 is more reliable than 'localhost' on Windows
-const CHAT_API = "http://127.0.0.1:8000/api/chat";
+const CHAT_API = `${process.env.REACT_APP_API_BASE}/chat` || "http://127.0.0.1:8000/api/chat";
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);

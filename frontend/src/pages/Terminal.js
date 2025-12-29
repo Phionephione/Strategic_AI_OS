@@ -3,7 +3,7 @@ import axios from 'axios';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, CartesianGrid } from 'recharts';
 import { Activity, TrendingUp, Search, Loader2, DollarSign, AlertCircle } from 'lucide-react';
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api";
 
 export default function Terminal() {
   const [data, setData] = useState([]);
