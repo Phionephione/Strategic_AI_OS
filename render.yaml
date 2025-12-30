@@ -1,5 +1,5 @@
 services:
-  # --- BACKEND ---
+  # --- BACKEND: Python FastAPI ---
   - type: web
     name: strategic-ai-backend
     env: python
@@ -13,14 +13,13 @@ services:
       - key: PYTHON_VERSION
         value: 3.10.12
 
-  # --- FRONTEND ---
-  - type: web
+  # --- FRONTEND: React Static Site ---
+  - type: static_site
     name: strategic-ai-terminal
-    env: static
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishDir: build
+    publishDir: build
     envVars:
       - key: REACT_APP_API_BASE
         fromService:
