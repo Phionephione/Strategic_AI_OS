@@ -17,18 +17,18 @@ services:
         value: 10000
 
   # --- FRONTEND: React Static Site ---
-  - type: static_site
+  - type: web # In Render Blueprints, static sites are also type 'web'
     name: strategic-ai-terminal
-    env: static
+    env: static # This 'env: static' is what tells Render it is a Static Site
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: build # FIXED: Changed from staticPublishDir to publishDir
+    staticPublishDir: build # This is the correct field name for static sites
     envVars:
       - key: REACT_APP_API_BASE
         fromService:
           type: web
           name: strategic-ai-backend
           property: host
-        # This interpolation tells React where the backend is
+        # This automatically links your React app to your Python Backend
         value: https://${strategic-ai-backend.host}/api
