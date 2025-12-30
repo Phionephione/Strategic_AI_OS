@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
 
-const CHAT_API = `${process.env.REACT_APP_API_BASE}/chat` || "http://127.0.0.1:8000/api/chat";
+// Using 127.0.0.1 is much more stable than 'localhost' on Windows
+const CHAT_URL = `${process.env.REACT_APP_API_BASE}/chat` || "http://127.0.0.1:8000/api/chat";
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,13 +23,12 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const res = await axios.post(CHAT_API, { message: currentInput }, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // POST request to FastAPI
+      const res = await axios.post(CHAT_URL, { message: currentInput });
       setMessages(prev => [...prev, { role: 'ai', text: res.data.response }]);
     } catch (err) {
       console.error("Chat Error:", err);
-      setMessages(prev => [...prev, { role: 'ai', text: 'Connection to Neural Link failed. Ensure Backend is running.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: 'Connection to Neural Link failed. Ensure Backend is running at Port 8000.' }]);
     }
     setLoading(false);
   };
@@ -51,7 +51,7 @@ export default function ChatBot() {
             <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white"><X size={20}/></button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${m.role === 'user' ? 'bg-cyan-600 text-white rounded-tr-none' : 'bg-[#0b0e14] text-slate-300 border border-slate-800 rounded-tl-none'}`}>
@@ -63,7 +63,7 @@ export default function ChatBot() {
           </div>
 
           <div className="p-4 bg-[#0b0e14] border-t border-slate-800 flex gap-2">
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} className="flex-1 bg-transparent border-none outline-none text-sm text-white px-2" placeholder="Analyze GDP, Prophet, or Trends..." />
+            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} className="flex-1 bg-transparent border-none outline-none text-sm text-white px-2" placeholder="Ask about GDP, Prophet, or Trends..." />
             <button onClick={handleSend} className="text-cyan-400 hover:text-cyan-300"><Send size={18}/></button>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Database, Search, Download, Loader2 } from 'lucide-react';
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api";
 
 export default function DataView() {
   const [country, setCountry] = useState("India");
