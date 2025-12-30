@@ -3,9 +3,10 @@ import pandas as pd
 from prophet import Prophet
 import pycountry
 import random
-from google import genai
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+import time
 
 # 1. LOAD ENVIRONMENT
 load_dotenv() 
@@ -13,20 +14,19 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 # 2. INITIALIZE AI CLIENT
 AI_AVAILABLE = False
-client = None
-
 if API_KEY:
     try:
-        # Pass the key explicitly to the client
-        client = genai.Client(api_key=API_KEY)
+        genai.configure(api_key=API_KEY)
+        # SWITCHED to 'gemini-1.5-flash' for higher rate limits (Free Tier stable)
+        model_ai = genai.GenerativeModel('gemini-1.5-flash')
         AI_AVAILABLE = True
-        print("SUCCESS: Strategic AI Neural Link Established.")
+        print("SUCCESS: AI Neural Link Established (Stable Mode).")
     except Exception as e:
-        print(f"ERROR: AI Initialization failed: {e}")
+        print(f"ERROR: Gemini Init failed: {e}")
 else:
-    print("ERROR: No API Key found in Environment Variables.")
+    print("ERROR: No GEMINI_API_KEY found.")
 
-# --- CORE GDP LOGIC ---
+# --- CORE LOGIC ---
 ANCHORS = {"IND": 4.20e12, "USA": 30.1e12, "CHN": 19.5e12}
 
 def get_country_code(name):
@@ -74,20 +74,17 @@ def get_year_factors(country_code, year):
         return {name: round(data.loc[code][f'YR{search_year}'] + (random.uniform(-1, 1) if int(year) > 2022 else 0), 2) for name, code in codes.items()}
     except: return {'consumption': 61.5, 'investment': 28.3, 'government': 12.2, 'exports': -2.0}
 
-# 3. AI CHAT LOGIC (Using Gemini 2.0 Flash for maximum speed/reliability)
+# 3. AI CHAT LOGIC (Higher Stability)
 def get_ai_chat_response(user_message):
-    if AI_AVAILABLE and client:
+    if AI_AVAILABLE:
         try:
-            # Using 2.0 flash which is fast, free, and stable
-            response = client.models.generate_content(
-                model='gemini-2.0-flash-exp',
-                contents=f"You are a Strategic AI. Context: We use Prophet and World Bank data to model GDP to 2050. User query: {user_message}"
-            )
+            # We use 1.5-flash for maximum reliability on Render
+            prompt = f"User asks: {user_message}. Context: You are a Strategic AI predicting GDP to 2050 using World Bank data and Prophet. Be concise (max 3 sentences)."
+            response = model_ai.generate_content(prompt)
             return response.text
         except Exception as e:
-            print(f"Gemini API Error: {e}")
+            if "429" in str(e):
+                return "The AI is cooling down (Rate Limit). Please wait 20 seconds and ask again."
+            return f"Strategic Assistant encountered a logic shift: {str(e)[:50]}..."
     
-    # Static Backup if API fails
-    msg = user_message.lower()
-    if "gdp" in msg: return "GDP stands for Gross Domestic Product. Our model uses the C+I+G+NX expenditure approach to project decade-scale growth."
-    return "Strategic Assistant is currently in local mode. Please check the network connectivity or API key configuration."
+    return "Neural Link Offline. Check API Configuration."
