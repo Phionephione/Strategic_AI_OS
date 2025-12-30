@@ -3,39 +3,30 @@ import pandas as pd
 from prophet import Prophet
 import pycountry
 import random
-from google import genai # Updated import for Gemini 3
+from google import genai
 import os
 from dotenv import load_dotenv
 
-# --- DYNAMIC PATHING FOR .ENV ---
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-dotenv_path = os.path.join(parent_dir, '.env')
-
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-    print(f"INFO: Successfully loaded .env from {dotenv_path}")
-else:
-    print(f"WARN: .env file not found at {dotenv_path}")
-
+# 1. LOAD ENVIRONMENT
+load_dotenv() 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# --- GEMINI 3 INITIALIZATION ---
+# 2. INITIALIZE AI CLIENT
 AI_AVAILABLE = False
 client = None
 
-if not API_KEY:
-    print("ERROR: Gemini API Key NOT found in .env. Bot will use Local Logic.")
-else:
+if API_KEY:
     try:
-        # Using the New Client syntax from your screenshot
+        # Pass the key explicitly to the client
         client = genai.Client(api_key=API_KEY)
         AI_AVAILABLE = True
-        print("SUCCESS: Strategic AI Neural Link (Gemini 3 Pro) Established.")
+        print("SUCCESS: Strategic AI Neural Link Established.")
     except Exception as e:
-        print(f"ERROR: Gemini 3 Link failed: {str(e)}")
+        print(f"ERROR: AI Initialization failed: {e}")
+else:
+    print("ERROR: No API Key found in Environment Variables.")
 
-# Real-world 2025 GDP Anchors
+# --- CORE GDP LOGIC ---
 ANCHORS = {"IND": 4.20e12, "USA": 30.1e12, "CHN": 19.5e12}
 
 def get_country_code(name):
@@ -49,7 +40,7 @@ def get_country_code(name):
 
 def get_strategic_forecast(country_name="India", horizon=25, confidence=0.80):
     code = get_country_code(country_name)
-    if not code: return {"error": f"Country '{country_name}' not identified."}
+    if not code: return {"error": "Country not identified."}
     try:
         data = wb.data.DataFrame('NY.GDP.MKTP.CD', code, time=range(1990, 2024))
         df_raw = data.T.reset_index()
@@ -58,8 +49,8 @@ def get_strategic_forecast(country_name="India", horizon=25, confidence=0.80):
         df_raw = df_raw.sort_values('ds').dropna()
         last_real_val = df_raw['y'].iloc[-1]
         anchor_2025 = ANCHORS.get(code, last_real_val * 1.12)
-        bridge_data = [{'ds': pd.to_datetime('2024-01-01'), 'y': last_real_val + (anchor_2025 - last_real_val)/2}, {'ds': pd.to_datetime('2025-01-01'), 'y': anchor_2025}]
-        df_final = pd.concat([df_raw, pd.DataFrame(bridge_data)], ignore_index=True)
+        bridge = [{'ds': pd.to_datetime('2024-01-01'), 'y': last_real_val + (anchor_2025 - last_real_val)/2}, {'ds': pd.to_datetime('2025-01-01'), 'y': anchor_2025}]
+        df_final = pd.concat([df_raw, pd.DataFrame(bridge)], ignore_index=True)
         truth_map = {row['ds'].year: row['y'] for _, row in df_final.iterrows()}
         m = Prophet(interval_width=confidence, yearly_seasonality=True, changepoint_prior_scale=0.1, growth='linear')
         m.fit(df_final)
@@ -83,20 +74,20 @@ def get_year_factors(country_code, year):
         return {name: round(data.loc[code][f'YR{search_year}'] + (random.uniform(-1, 1) if int(year) > 2022 else 0), 2) for name, code in codes.items()}
     except: return {'consumption': 61.5, 'investment': 28.3, 'government': 12.2, 'exports': -2.0}
 
+# 3. AI CHAT LOGIC (Using Gemini 2.0 Flash for maximum speed/reliability)
 def get_ai_chat_response(user_message):
-    """Gemini 3 Pro Strategic Assistant."""
     if AI_AVAILABLE and client:
         try:
-            # Using the new model name and Client syntax from your screenshot
+            # Using 2.0 flash which is fast, free, and stable
             response = client.models.generate_content(
                 model='gemini-2.0-flash-exp',
-                contents=f"You are a Strategic AI. Context: We use Prophet and World Bank data to model GDP to 2050. Answer this: {user_message}"
+                contents=f"You are a Strategic AI. Context: We use Prophet and World Bank data to model GDP to 2050. User query: {user_message}"
             )
             return response.text
         except Exception as e:
-            print(f"DEBUG: Gemini 3 API error - {e}")
+            print(f"Gemini API Error: {e}")
     
-    # --- Backup Local Logic if API fails ---
+    # Static Backup if API fails
     msg = user_message.lower()
-    if "gdp" in msg: return "GDP is the market value of final goods. Our model uses the Expenditure Approach (C+I+G+NX)."
-    return "Strategic Assistant is in limited mode. Projections show high historical momentum for the current nation."
+    if "gdp" in msg: return "GDP stands for Gross Domestic Product. Our model uses the C+I+G+NX expenditure approach to project decade-scale growth."
+    return "Strategic Assistant is currently in local mode. Please check the network connectivity or API key configuration."
