@@ -1,33 +1,30 @@
 services:
-  # --- BACKEND: Python FastAPI AI Engine ---
+  # --- BACKEND ---
   - type: web
     name: strategic-ai-backend
     env: python
     plan: free
-    region: singapore
     rootDir: backend
-    buildCommand: pip install --no-cache-dir -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.12
       - key: GEMINI_API_KEY
         sync: false
-      - key: PORT
-        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.10.12
 
-  # --- FRONTEND: React Static Site ---
-  - type: static_site
+  # --- FRONTEND ---
+  - type: web
     name: strategic-ai-terminal
+    env: static
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: build # FIXED: In 'static_site' type, the field is 'publishDir'
+    staticPublishDir: build
     envVars:
       - key: REACT_APP_API_BASE
         fromService:
           type: web
           name: strategic-ai-backend
           property: host
-        # This automatically links your React app to your Python Backend
         value: https://${strategic-ai-backend.host}/api
