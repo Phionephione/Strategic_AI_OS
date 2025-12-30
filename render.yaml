@@ -17,13 +17,12 @@ services:
         value: 10000
 
   # --- FRONTEND: React Static Site ---
-  - type: web # In Render Blueprints, static sites are also type 'web'
+  - type: static_site
     name: strategic-ai-terminal
-    env: static # This 'env: static' is what tells Render it is a Static Site
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishDir: build # This is the correct field name for static sites
+    publishDir: build # FIXED: In 'static_site' type, the field is 'publishDir'
     envVars:
       - key: REACT_APP_API_BASE
         fromService:
