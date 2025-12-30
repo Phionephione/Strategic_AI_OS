@@ -1,0 +1,34 @@
+services:
+  # --- BACKEND: Python FastAPI AI Engine ---
+  - type: web
+    name: strategic-ai-backend
+    env: python
+    plan: free
+    region: singapore # Change to your closest region
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12 # Forcing stable Python for Prophet
+      - key: GEMINI_API_KEY
+        sync: false # You will enter this manually in the dashboard
+      - key: PORT
+        value: 10000
+
+  # --- FRONTEND: React Static Site ---
+  - type: web
+    name: strategic-ai-terminal
+    env: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishDir: build
+    envVars:
+      - key: REACT_APP_API_BASE
+        fromService:
+          type: web
+          name: strategic-ai-backend
+          property: host
+        # This automatically grabs the backend URL and adds /api
+        value: https://${strategic-ai-backend.host}/api
