@@ -6,4 +6,4 @@ pandas
 pydantic
 pycountry
 python-dotenv
-google-genai
+google-generativeai
