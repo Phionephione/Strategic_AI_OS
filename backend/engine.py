@@ -19,7 +19,7 @@ if API_KEY:
     try:
         genai.configure(api_key=API_KEY)
         # Using 1.5-flash because it is the most stable and reliable for Free Keys
-        model_ai = genai.GenerativeModel('gemini-1.5-flash')
+        model_ai = genai.GenerativeModel('gemini-3-pro-preview')
         AI_AVAILABLE = True
         print("SUCCESS: Strategic AI Neural Link Established.")
     except Exception as e:
