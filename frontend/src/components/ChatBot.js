@@ -2,8 +2,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
 
-// Using the explicit IP is more stable on Windows
-const CHAT_ENDPOINT = "http://127.0.0.1:8000/api/chat";
+// This function automatically detects if it should use Render or Localhost
+const getChatUrl = () => {
+    const apiBase = process.env.REACT_APP_API_BASE;
+    if (apiBase) {
+        // If apiBase is "https://your-backend.onrender.com/api"
+        // This ensures the chat hits "https://your-backend.onrender.com/api/chat"
+        return apiBase.endsWith('/') ? `${apiBase}chat` : `${apiBase}/chat`;
+    }
+    // Local Fallback for when you run on your laptop
+    return "http://127.0.0.1:8000/api/chat";
+};
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,12 +32,17 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      // Direct POST to FastAPI backend
-      const res = await axios.post(CHAT_ENDPOINT, { message: currentInput });
+      // It now uses the dynamic URL
+      const res = await axios.post(getChatUrl(), { message: currentInput });
       setMessages(prev => [...prev, { role: 'ai', text: res.data.response }]);
     } catch (err) {
-      console.error("Link Error:", err);
-      setMessages(prev => [...prev, { role: 'ai', text: 'Connection failed. Ensure Backend is running at http://127.0.0.1:8000' }]);
+      console.error("Chat Error:", err);
+      // Helpful error message for your presentation
+      const errorMsg = process.env.REACT_APP_API_BASE 
+        ? "Connection to Render Backend failed. Wake it up!" 
+        : "Connection failed. Ensure Backend is running at http://127.0.0.1:8000";
+      
+      setMessages(prev => [...prev, { role: 'ai', text: errorMsg }]);
     }
     setLoading(false);
   };
